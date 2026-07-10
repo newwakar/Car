@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FleetTrack Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        .cute-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .cute-card { border-radius: 24px; box-shadow: 0 10px 30px -5px rgba(118, 75, 162, 0.1); }
+    </style>
+</head>
+<body class="bg-[#f8f9fd] font-sans antialiased text-gray-800">
+
+    <nav class="cute-gradient text-white shadow-lg px-6 py-4 flex justify-between items-center rounded-b-[32px]">
+        <div class="flex items-center space-x-3">
+            <div class="bg-white/20 p-2.5 rounded-2xl"><i class="fa-solid fa-wand-magic-sparkles text-xl text-yellow-300"></i></div>
+            <span class="font-bold text-xl tracking-wide">FleetTrack Studio</span>
+        </div>
+        <div class="flex space-x-2" id="nav-container">
+            <button onclick="switchView('customer-view')" class="px-4 py-2 rounded-xl text-sm font-semibold bg-white/20 hover:bg-white/30 transition">Book Ride</button>
+            <button onclick="switchView('login-view')" id="logout-btn" class="px-4 py-2 rounded-xl text-sm font-semibold bg-pink-500 hover:bg-pink-600 shadow-md transition"><i class="fa-solid fa-lock mr-2"></i>Portal Login</button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6">
+
+        <section id="customer-view" class="view-section space-y-6">
+            <div class="bg-white p-8 cute-card border border-indigo-50/50">
+                <h2 class="text-2xl font-black text-gray-800 mb-6"><i class="fa-solid fa-calendar-heart text-indigo-500 mr-2"></i>Schedule a Magical Trip</h2>
+                <form id="booking-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Your Name</label>
+                        <input type="text" id="cust-name" required class="w-full rounded-2xl border-0 p-3.5 bg-gray-50 focus:ring-2 focus:ring-indigo-400 transition" placeholder="Hello, who is traveling?">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">When do you need the ride?</label>
+                        <input type="datetime-local" id="cust-date" required class="w-full rounded-2xl border-0 p-3.5 bg-gray-50 focus:ring-2 focus:ring-indigo-400 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Pickup Hub Address</label>
+                        <input type="text" id="cust-pickup" required class="w-full rounded-2xl border-0 p-3.5 bg-gray-50 focus:ring-2 focus:ring-indigo-400 transition" placeholder="📍 Start location">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Drop Destination Address</label>
+                        <input type="text" id="cust-drop" required class="w-full rounded-2xl border-0 p-3.5 bg-gray-50 focus:ring-2 focus:ring-indigo-400 transition" placeholder="🏁 Where to drop off?">
+                    </div>
+                    <button type="submit" class="md:col-span-2 w-full cute-gradient text-white font-bold p-4 rounded-2xl hover:opacity-90 shadow-lg transition transform hover:-translate-y-0.5">
+                        Confirm Ride Scheduling
+                    </button>
+                </form>
+            </div>
+        </section>
+
+
+        <section id="login-view" class="view-section hidden max-w-md mx-auto py-12">
+            <div class="bg-white p-8 cute-card border border-indigo-50/50 space-y-6">
+                <div class="text-center">
+                    <h2 class="text-2xl font-black text-gray-800">Welcome Back!</h2>
+                    <p class="text-sm text-gray-400">Please authenticate to access your panel dashboard</p>
+                </div>
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">System Access Level</label>
+                        <select id="login-role" class="w-full rounded-2xl border-0 p-3.5 bg-gray-50">
+                            <option value="driver">🚗 I am a Car Driver</option>
+                            <option value="admin">👑 I am the Fleet Admin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Username</label>
+                        <input type="text" id="login-user" required class="w-full rounded-2xl border-0 p-3.5 bg-gray-50 focus:ring-2 focus:ring-indigo-400" placeholder="Enter username credentials">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Security Key Password</label>
+                        <input type="password" id="login-pass" required class="w-full rounded-2xl border-0 p-3.5 bg-gray-50 focus:ring-2 focus:ring-indigo-400" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full cute-gradient text-white font-bold p-3.5 rounded-2xl transition">
+                        Verify & Secure Login
+                    </button>
+                </form>
+            </div>
+        </section>
+
+
+        <section id="driver-view" class="view-section hidden max-w-md mx-auto space-y-6">
+            <div class="bg-white p-8 cute-card text-center border space-y-4">
+                <div class="h-20 w-20 cute-gradient text-white rounded-full flex items-center justify-center mx-auto text-3xl shadow-lg"><i class="fa-solid fa-id-badge"></i></div>
+                <div>
+                    <h2 id="driver-welcome-title" class="text-xl font-black text-gray-800">Driver Console</h2>
+                    <p id="driver-car-title" class="text-sm text-indigo-500 font-medium">Assigned Vehicle Mapping</p>
+                </div>
+                <div class="p-4 bg-emerald-50 rounded-2xl flex items-center justify-between text-left">
+                    <div>
+                        <p class="font-bold text-sm text-emerald-900">Live GPS Tracker Relay</p>
+                        <p id="gps-status-text" class="text-xs text-emerald-600">Location beacon suspended.</p>
+                    </div>
+                    <span id="gps-indicator" class="h-3 w-3 rounded-full bg-gray-300"></span>
+                </div>
+                <button onclick="toggleGpsTracking()" id="gps-toggle-btn" class="w-full bg-emerald-500 text-white font-bold p-4 rounded-2xl hover:bg-emerald-600 shadow-md transition">
+                    Start Sharing Live Location
+                </button>
+            </div>
+        </section>
+
+
+        <section id="admin-view" class="view-section hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white p-4 cute-card border space-y-3">
+                    <h3 class="text-lg font-black text-gray-800 px-2 pt-2"><i class="fa-solid fa-earth-americas text-indigo-500 mr-2"></i>Live Operational Fleet Map Mapping</h3>
+                    <div id="map" class="w-full h-[450px] rounded-[20px] z-10 border border-gray-100"></div>
+                </div>
+                <div class="bg-white p-6 cute-card border space-y-4">
+                    <h3 class="text-lg font-black text-gray-800"><i class="fa-solid fa-bolt-lightning text-amber-500 mr-2"></i>Fleet Status Engine</h3>
+                    <div id="fleet-list-container" class="divide-y divide-gray-100 space-y-4">
+                        <p class="text-sm text-gray-400">Loading tracking array data parameters...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let watchId = null;
+        let loggedDriverCar = null;
+        let adminIntervalId = null;
+
+        // Leaflet Live Asset Mapping Framework setup initialization
+        const map = L.map('map').setView([17.3850, 78.4867], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        const vehicleMarkers = {};
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+            
+            clearInterval(adminIntervalId);
+            if(viewId === 'admin-view') {
+                setTimeout(() => { map.invalidateSize(); }, 250);
+                pollFleetStatus();
+                adminIntervalId = setInterval(pollFleetStatus, 4000);
+            }
+        }
+
+        // Login Handler logic router
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const payload = {
+                role: document.getElementById('login-role').value,
+                username: document.getElementById('login-user').value,
+                password: document.getElementById('login-pass').value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const user = await response.json();
+
+                if(user.role === 'admin') {
+                    // Update navigation layout triggers
+                    document.getElementById('logout-btn').outerHTML = `<button onclick="location.reload()" class="px-4 py-2 rounded-xl text-sm font-semibold bg-red-500 text-white">Logout Admin</button>`;
+                    switchView('admin-view');
+                } else {
+                    loggedDriverCar = user.car_name;
+                    document.getElementById('driver-welcome-title').innerText = user.driver_name;
+                    document.getElementById('driver-car-title').innerText = user.car_name;
+                    document.getElementById('logout-btn').outerHTML = `<button onclick="location.reload()" class="px-4 py-2 rounded-xl text-sm font-semibold bg-red-500 text-white">Logout Driver</button>`;
+                    switchView('driver-view');
+                }
+            } catch (err) {
+                alert('Authentication system rejected credentials payload parameters matching.');
+            }
+        });
+
+        // Tracking Driver Coordinates Core Loop thread execution
+        function toggleGpsTracking() {
+            const btn = document.getElementById('gps-toggle-btn');
+            const indicator = document.getElementById('gps-indicator');
+            const statusText = document.getElementById('gps-status-text');
+
+            if (watchId === null) {
+                watchId = navigator.geolocation.watchPosition(async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    statusText.innerText = `Transmitting: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                    indicator.className = "h-3 w-3 rounded-full bg-emerald-500 animate-pulse";
+                    
+                    await fetch(`${API_URL}/gps/update`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ car_name: loggedDriverCar, latitude, longitude })
+                    });
+                }, err => statusText.innerText = `Error: ${err.message}`, { enableHighAccuracy: true });
+
+                btn.innerText = "Disable Live Sharing Tracking";
+                btn.className = "w-full bg-red-500 text-white font-bold p-4 rounded-2xl";
+            } else {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+                statusText.innerText = "Location beacon suspended.";
+                indicator.className = "h-3 w-3 rounded-full bg-gray-300";
+                btn.innerText = "Start Sharing Live Location";
+                btn.className = "w-full bg-emerald-500 text-white font-bold p-4 rounded-2xl";
+            }
+        }
+
+        // Admin: Pulling positions loop engine mapping tracking data frames
+        async function pollFleetStatus() {
+            try {
+                const response = await fetch(`${API_URL}/fleet/status`);
+                const cars = await response.json();
+                const container = document.getElementById('fleet-list-container');
+                container.innerHTML = '';
+
+                cars.forEach(car => {
+                    const div = document.createElement('div');
+                    div.className = 'pt-3 flex items-center justify-between';
+                    div.innerHTML = `
+                        <div>
+                            <p class="font-black text-gray-800 text-sm">${car.car_name}</p>
+                            <p class="text-xs text-gray-400 font-semibold"><i class="fa-solid fa-user-astronaut mr-1"></i>${car.driver_name}</p>
+                        </div>
+                        <span class="px-3 py-1 text-xs font-black rounded-full bg-indigo-50 text-indigo-600">${car.status}</span>
+                    `;
+                    container.appendChild(div);
+
+                    if (car.latitude && car.longitude) {
+                        if (vehicleMarkers[car.car_name]) {
+                            vehicleMarkers[car.car_name].setLatLng([car.latitude, car.longitude]);
+                        } else {
+                            vehicleMarkers[car.car_name] = L.marker([car.latitude, car.longitude]).addTo(map)
+                                .bindPopup(`<b>${car.car_name}</b><br>${car.driver_name}`);
+                        }
+                    }
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        // Process Customer Rides Booking Execution Engine
+        document.getElementById('booking-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const data = {
+                customer_name: document.getElementById('cust-name').value,
+                ride_date: document.getElementById('cust-date').value,
+                pickup_location: document.getElementById('cust-pickup').value,
+                drop_location: document.getElementById('cust-drop').value
+            };
+
+            await fetch(`${API_URL}/bookings/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            alert('Your ride has been successfully booked in our database engine!');
+            this.reset();
+        });
+    </script>
+</body>
+</html>
